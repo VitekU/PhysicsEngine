@@ -5,30 +5,33 @@ namespace engine;
 
 public abstract class Collisions
 {
-    public static bool CircleCollision(Circle2D a, Circle2D b, out Vector2 n)
+    public static bool CircleCollision(Circle2D a, Circle2D b, out Vector2 n, out Vector2 cp)
     {
         float distance = Vector2.Distance(a.Position, b.Position);
         float radii = a.Radius + b.Radius;
             
         if (distance < radii)
         {
-            
             Vector2 normal = Vector2.Normalize(b.Position - a.Position);
             float depth = radii - distance;
             
             a.Impulse(-normal * depth / 2f);
             b.Impulse(normal * depth / 2f);
+            
             n = normal;
+            ContactPoints.CircleCircleContact(a, b, out cp);
             return true;
         }
-
+        
         n = Vector2.Zero;
+        cp = Vector2.Zero;
         return false;
     }
 
-    public static bool CircleRectangleCollision(Circle2D circle, Rectangle2D rectangle, out Vector2 normal)
+    public static bool CircleRectangleCollision(Circle2D circle, Rectangle2D rectangle, out Vector2 normal, out Vector2 _cp)
     {
         normal = Vector2.Zero;
+        _cp = Vector2.Zero;
         Vector2 closestPoint = rectangle.Vertices[0];
         Vector2 separatingAxis;
         float minA;
@@ -101,7 +104,8 @@ public abstract class Collisions
         {
             normal *= -1;
         }
-
+        ContactPoints.CircleRectangleContact(circle, rectangle, out Vector2 cp);
+        _cp = cp;
         circle.Impulse(-normal * depth / 2f);
         rectangle.Impulse(normal * depth / 2f);
         return true;
@@ -211,9 +215,9 @@ public abstract class Collisions
         
         float e = Math.Min(a.Restitution, b.Restitution);
 
-        float j = -(1 + e) * Vector2.Dot(relativeVelocity, normal) / (1f / a.Mass + 1f / b.Mass);
+        float j = -(1 + e) * Vector2.Dot(relativeVelocity, normal) / (a.InverseMass + b.InverseMass);
 
-        a.Velocity -= j / a.Mass * normal;
-        b.Velocity += j / b.Mass * normal;
+        a.Velocity -= j * a.InverseMass * normal;
+        b.Velocity += j * b.InverseMass * normal;
     }
 }

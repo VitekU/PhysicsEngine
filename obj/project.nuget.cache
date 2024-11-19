@@ -1,11 +1,15 @@
 {
   "version": 2,
-  "dgSpecHash": "fdp+pt3D5PWyNt4yuzbeIXXc4XucnAQencv19lRjEmov3GCck5FqLbvNVWBGtdGirFg99nDhAEjveg4Vflwe8g==",
+  "dgSpecHash": "sLCWy2+J5LdpCSyj8RY3zJTxqSfC8lK5qKx7/AdmcqSSe+CUZ2KttNmfuCGLmZ8ra+gPrsvONvEZmbaVlgrr/A==",
   "success": true,
   "projectFilePath": "/Users/vitungermann/Desktop/rocnikovka/engine/engine/engine.csproj",
   "expectedPackageFiles": [
+    "/Users/vitungermann/.nuget/packages/imgui.net/1.90.9.1/imgui.net.1.90.9.1.nupkg.sha512",
     "/Users/vitungermann/.nuget/packages/raylib-cs/6.1.1/raylib-cs.6.1.1.nupkg.sha512",
-    "/Users/vitungermann/.nuget/packages/system.numerics.vectors/4.5.0/system.numerics.vectors.4.5.0.nupkg.sha512"
+    "/Users/vitungermann/.nuget/packages/rlimgui-cs/2.1.0/rlimgui-cs.2.1.0.nupkg.sha512",
+    "/Users/vitungermann/.nuget/packages/system.buffers/4.4.0/system.buffers.4.4.0.nupkg.sha512",
+    "/Users/vitungermann/.nuget/packages/system.numerics.vectors/4.5.0/system.numerics.vectors.4.5.0.nupkg.sha512",
+    "/Users/vitungermann/.nuget/packages/system.runtime.compilerservices.unsafe/4.4.0/system.runtime.compilerservices.unsafe.4.4.0.nupkg.sha512"
   ],
   "logs": []
 }

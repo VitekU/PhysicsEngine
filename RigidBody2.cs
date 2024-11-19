@@ -13,6 +13,7 @@ public abstract class RigidBody2
     public Vector2 Acceleration { get; private set; }
     public float Restitution { get; private set; }
     public float Mass { get; private set; }
+    public float InverseMass { get; private set; }
     public bool IsStatic { get; private set; }
     
     protected virtual void UpdateVertices(float angleChange) {}
@@ -23,12 +24,12 @@ public abstract class RigidBody2
     }
     public void Impulse(Vector2 force)
     {
-        Position += force / Mass;
+        Position += force * InverseMass;
     }
     
     public void Force(Vector2 force)
     {
-        Acceleration += force / Mass;
+        Acceleration += force * InverseMass;
     }
     public void Step(float delta)
     {
@@ -55,12 +56,15 @@ public abstract class RigidBody2
         Acceleration = Vector2.Zero;
         Restitution = restitution;
         Mass = mass;
+        InverseMass = 1 / mass;
         IsStatic = isStatic;
         Angle = angle;
+        
         
         if (isStatic)
         {
             Mass = float.MaxValue;
+            InverseMass = 0;
         }
     }
     

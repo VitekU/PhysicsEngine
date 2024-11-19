@@ -1,126 +1,132 @@
 using System.Numerics;
 
-namespace engine
-{
-    public class Engine
-    {
-        private readonly List<RigidBody2> _bodies;
-        private int _heightBoundary;
-        private int _widthBoundary;
-        private readonly float _maxRadius;
-        private readonly float _maxMass;
-        private readonly float _maxRestitution;
-        private readonly float _maxWidth;
-        private readonly float _maxHeight;
-        private float _stepLenght;
-        private readonly int _substeps = 16;
-        
+namespace engine;
 
-        public void Step(float delta)
+public class Engine
+{
+    private readonly List<RigidBody2> _bodies;
+    private int _heightBoundary;
+    private int _widthBoundary;
+    private readonly float _maxRadius;
+    private readonly float _maxMass;
+    private readonly float _maxRestitution;
+    private readonly float _maxWidth;
+    private readonly float _maxHeight;
+    private float _stepLenght;
+    private readonly int _substeps = 16;
+    public List<Vector2> CPs { get; set; }
+    public float Gravitation { get; set; }
+
+    public void Step(float delta)
+    {
+        CPs.Clear(); 
+        _stepLenght += delta;
+        if (_stepLenght >= 1/60f)
         {
-            _stepLenght += delta;
-            if (_stepLenght >= 1/60f)
+            for (int s = 0; s < _substeps; s++)
             {
-                for (int s = 0; s < _substeps; s++)
+                    
+                for (int i = 0; i < BodyCount(); i++)
                 {
+                    RigidBody2 a = _bodies[i];
                     
-                    for (int i = 0; i < BodyCount(); i++)
+                    for (int j = i + 1; j < BodyCount(); j++)
                     {
-                        RigidBody2 a = _bodies[i];
-                    
-                        for (int j = i + 1; j < BodyCount(); j++)
-                        {
-                            RigidBody2 b = _bodies[j];
+                        RigidBody2 b = _bodies[j];
     
-                            if (a is Circle2D circleA)
-                            {
-                                if (b is Circle2D circleB)
-                                {
-                                    if (Collisions.CircleCollision(circleA, circleB, out Vector2 normal))
-                                    {
-                                        Collisions.ResolveCollision(circleA, circleB, normal);
-                                    }
-                                }
-                                else if (b is Rectangle2D rectangleB)
-                                {
-                                    if (Collisions.CircleRectangleCollision(circleA, rectangleB, out Vector2 normal))
-                                    {
-                                        Collisions.ResolveCollision(circleA, rectangleB, normal);
-                                    }
-                                }
-                            }
-                            else if (a is Rectangle2D rectangleA)
-                            {
-                                if (b is Circle2D circleB)
-                                {
-                                    if (Collisions.CircleRectangleCollision(circleB, rectangleA, out Vector2 normal))
-                                    {
-                                        Collisions.ResolveCollision(rectangleA, circleB, normal);;
-                                    }
-                                }
-                                else if (b is Rectangle2D rectangleB)
-                                {
-                                    if (Collisions.RectangleRectangleCollision(rectangleA, rectangleB, out Vector2 normal))
-                                    {
-                                        Collisions.ResolveCollision(rectangleA, rectangleB, normal);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                
-                    foreach (var body in _bodies)
-                    {
-                        if (!body.IsStatic)
+                        if (a is Circle2D circleA)
                         {
-                            body.ApplyGravity(new Vector2(0, 100f));
+                            if (b is Circle2D circleB)
+                            {
+                                if (Collisions.CircleCollision(circleA, circleB, out Vector2 normal, out Vector2 cp))
+                                {
+                                    CPs.Add(cp);
+                                    Collisions.ResolveCollision(circleA, circleB, normal);
+                                }
+                            }
+                            else if (b is Rectangle2D rectangleB)
+                            {
+                                if (Collisions.CircleRectangleCollision(circleA, rectangleB, out Vector2 normal, out Vector2 cp))
+                                {
+                                    CPs.Add(cp);
+                                    Collisions.ResolveCollision(circleA, rectangleB, normal);
+                                }
+                            }
                         }
-                        
-                        body.Step(1 / 60f / _substeps);
+                        else if (a is Rectangle2D rectangleA)
+                        {
+                            if (b is Circle2D circleB)
+                            {
+                                if (Collisions.CircleRectangleCollision(circleB, rectangleA, out Vector2 normal, out Vector2 cp))
+                                {
+                                    CPs.Add(cp);
+                                    Collisions.ResolveCollision(rectangleA, circleB, normal);
+                                }
+                            }
+                            else if (b is Rectangle2D rectangleB)
+                            {
+                                if (Collisions.RectangleRectangleCollision(rectangleA, rectangleB, out Vector2 normal))
+                                {
+                                    Collisions.ResolveCollision(rectangleA, rectangleB, normal);
+                                }
+                            }
+                        }
                     }
                 }
-                _stepLenght = 0;
+                
+                foreach (var body in _bodies)
+                {
+                    if (!body.IsStatic)
+                    {
+                        body.ApplyGravity(new Vector2(0, Gravitation));
+                    }
+                        
+                    body.Step(1 / 60f / _substeps);
+                }
             }
+            _stepLenght = 0;
         }
+    }
         
-        // managing bodies in the engine
-        public List<RigidBody2> GetBodies()
-        {
-            return _bodies;
-        }
-        public int BodyCount()
-        {
-            return _bodies.Count;
-        }
+    // managing bodies in the engine
+    public List<RigidBody2> GetBodies()
+    {
+        return _bodies;
+    }
+    public int BodyCount()
+    {
+        return _bodies.Count;
+    }
         
-        public bool AddCircle(Vector2 position, float restitution, float mass, bool isStatic, float radius, float angle)
+    public bool AddCircle(Vector2 position, float restitution, float mass, bool isStatic, float radius, float angle)
+    {
+        if (radius <= _maxRadius && mass <= _maxMass && restitution <= _maxRestitution && restitution > 0 && mass > 0 && radius > 0)
         {
-            if (radius <= _maxRadius && mass <= _maxMass && restitution <= _maxRestitution)
-            {
-                _bodies.Add(new Circle2D(position, restitution, mass, isStatic, angle, radius));
-                return true;
-            }
-            return false;
+            _bodies.Add(new Circle2D(position, restitution, mass, isStatic, angle, radius));
+            return true;
         }
+        return false;
+    }
 
-        public bool AddRectangle(Vector2 position, float restitution, float mass, bool iSstatic, float width, float height, float angle)
+    public bool AddRectangle(Vector2 position, float restitution, float mass, bool iSstatic, float width, float height, float angle)
+    {
+        if (width <= _maxWidth && height <= _maxHeight && mass <= _maxMass && restitution <= _maxRestitution && restitution > 0 && mass > 0 && width > 0 && height > 0)
         {
-            if (width <= _maxWidth && height <= _maxHeight && mass <= _maxMass && restitution <= _maxRestitution)
-            {
-                _bodies.Add(new Rectangle2D(position, restitution, mass, iSstatic, angle, width, height));
-                return true;
-            }
-            return false;
+            _bodies.Add(new Rectangle2D(position, restitution, mass, iSstatic, angle, width, height));
+            return true;
         }
-        public Engine(float maxRadius, float maxMass, float maxRestituion, float maxHeight, float maxWidth)
-        {
-            _maxRadius = maxRadius;
-            _maxMass = maxMass;
-            _maxRestitution = maxRestituion;
-            _maxHeight = maxHeight;
-            _maxWidth = maxWidth;
+        return false;
+    }
+    public Engine(float maxRadius, float maxMass, float maxRestituion, float maxHeight, float maxWidth)
+    {
+        _maxRadius = maxRadius;
+        _maxMass = maxMass;
+        _maxRestitution = maxRestituion;
+        _maxHeight = maxHeight;
+        _maxWidth = maxWidth;
+        Gravitation = 1000f;
+        CPs = new List<Vector2>();
 
-            _bodies = new();
-        }
+        _bodies = new();
     }
 }
