@@ -1,5 +1,4 @@
 using System.Numerics;
-using System.Xml;
 using ImGuiNET;
 using Raylib_cs;
 using rlImGui_cs;
@@ -15,7 +14,9 @@ public class Application
     private bool _iSGuiVisible;
     private bool _iSFpsVisible;
     private bool _iSBodyCountVisible;
-    private Vector2 _windowLocation;
+    private Vector2 _debugWindowLocation;
+    private float _debugWindowHeight;
+    private float _debugWindowWidth;
     private float _spawnRectRestitution;
     private float _spawnCircleRestitution;
     private float _spawnRectMass;
@@ -25,15 +26,20 @@ public class Application
     private float _spawnCircleRadius;
     private float _spawnAngle;
     private bool _spawnIsStatic;
+    private float _spawnDk;
+    private float _spawnSk;
+    private bool _areContactPointsVisible;
     public void Start()
     {
         Raylib.SetConfigFlags(ConfigFlags.ResizableWindow);
-        Raylib.InitWindow(800,600, "engine");
+        Raylib.InitWindow(1600,1000, "engine");
         rlImGui.Setup();
-        _engine.AddRectangle(new Vector2(400f, 200f), 0.6f, 2f, false, 100f, 100f, 0f);
-
-        _engine.AddRectangle(new Vector2(400f, 500f), 1f, 1f, true, 700f, 40f, 0f);
         
+        //_engine.AddRectangle(new Vector2( 400, 110), 0.8f, 10f, false, 100f, 100f, 0f);
+        //_engine.AddRectangle(new Vector2(800, 800f), 0.8f, 1f, true, 1000, 80f, 0f);
+        _engine.AddRectangle(new Vector2(800f, 800f), 0.8f, 1f, true, 1400f, 80f, 0f, 0.1f, 0.2f);
+        //_engine.AddRectangle(new Vector2(400, 300), 0.6f, 1f, true, 800, 80f, 10);
+        _engine.AddRectangle(new Vector2(1200, 500), 0.6f, 1f, true, 700, 80f, -10, 0.1f, 0.2f);
         _run = true;
         Raylib.SetTargetFPS(60);
         ApplicationLoop();
@@ -50,18 +56,22 @@ public class Application
             if (body is Circle2D circle)
             {
                 Raylib.DrawCircle((int)(circle.Position.X), (int)(circle.Position.Y), circle.Radius , Color.Red);
+                Raylib.DrawLineEx(circle.Position, circle.PointForRotation, 2f, Color.Black);
             }
             if (body is Rectangle2D rectangle)
             {
                 Rectangle rect = new Rectangle(rectangle.Position.X, rectangle.Position.Y, rectangle.Width, rectangle.Height);
                 Vector2 origin = new Vector2(rectangle.Width / 2f , rectangle.Height / 2f );
-                Raylib.DrawRectanglePro(rect, origin, rectangle.Angle, Color.Blue);
+                Raylib.DrawRectanglePro(rect, origin, (float)(rectangle.Angle / Math.PI * 180), Color.Blue);
             }
         }
 
-        foreach (var cp in _engine.CPs)
+        if (_areContactPointsVisible)
         {
-            Raylib.DrawCircle((int)cp.X, (int)cp.Y, 5f, Color.Green);
+            foreach (var cp in _engine.CPs)
+            {
+                Raylib.DrawCircle((int)cp.X, (int)cp.Y, 3f, Color.Green);
+            } 
         }
         Raylib.EndMode2D();
         HandleGui();
@@ -87,6 +97,7 @@ public class Application
                 _engine.Gravitation = g * 10;
                 ImGui.Checkbox("Show FPS", ref _iSFpsVisible);
                 ImGui.Checkbox("Show BodyCount", ref _iSBodyCountVisible);
+                ImGui.Checkbox("Show contact points", ref _areContactPointsVisible);
             }
 
             if (ImGui.CollapsingHeader("Spawning bodies params"))
@@ -99,10 +110,14 @@ public class Application
                 ImGui.InputFloat("Rectangle height", ref _spawnRectHeight);
                 ImGui.InputFloat("Rectangle width", ref _spawnRectWidth);
                 ImGui.InputFloat("Body angle", ref _spawnAngle);
+                ImGui.InputFloat("Dynamic friction", ref _spawnDk);
+                ImGui.InputFloat("Static friction", ref _spawnSk);
                 ImGui.Checkbox("Is body static", ref _spawnIsStatic);
             }
             
-            _windowLocation = ImGui.GetWindowPos();
+            _debugWindowLocation = ImGui.GetWindowPos();
+            _debugWindowHeight = ImGui.GetWindowHeight();
+            _debugWindowWidth = ImGui.GetWindowWidth();
             ImGui.End();
         }
         rlImGui.End();
@@ -120,7 +135,6 @@ public class Application
         {
             Raylib.DrawText(Convert.ToString(_engine.GetBodies().Count), 5, 0, 30, Color.Black);
         }
-        
     }
     private void PauseOrResume()
     {
@@ -129,28 +143,26 @@ public class Application
             _run = !_run;
         }
     }
-
     private void TrySpawnBodies()
     {
         Vector2 mousePos = Raylib.GetMousePosition();
         if (_iSGuiVisible)
         {
-            if (mousePos.X >= _windowLocation.X && mousePos.X <= _windowLocation.X + 300 &&
-                mousePos.Y >= _windowLocation.Y && mousePos.Y <= _windowLocation.Y + 100)
+            if (mousePos.X >= _debugWindowLocation.X && mousePos.X <= _debugWindowLocation.X + _debugWindowWidth &&
+                mousePos.Y >= _debugWindowLocation.Y && mousePos.Y <= _debugWindowLocation.Y + _debugWindowHeight)
             {
                 return;
             }
         }
         if (Raylib.IsMouseButtonPressed(MouseButton.Left))
         {
-            _engine.AddCircle(mousePos, _spawnCircleRestitution, _spawnCircleMass, _spawnIsStatic, _spawnCircleRadius, _spawnAngle);
+            _engine.AddCircle(mousePos, _spawnCircleRestitution, _spawnCircleMass, _spawnIsStatic, _spawnCircleRadius, _spawnAngle, _spawnDk, _spawnSk);
         }
         else if (Raylib.IsMouseButtonPressed(MouseButton.Right))
         {
-            _engine.AddRectangle(mousePos, _spawnRectRestitution, _spawnRectMass, _spawnIsStatic, _spawnRectWidth, _spawnRectHeight, _spawnAngle);
+            _engine.AddRectangle(mousePos, _spawnRectRestitution, _spawnRectMass, _spawnIsStatic, _spawnRectWidth, _spawnRectHeight, _spawnAngle, _spawnDk, _spawnSk);
         }
     }
-
     private void TryZoom()
     {
         if (Raylib.IsKeyDown(KeyboardKey.Up))
@@ -174,15 +186,12 @@ public class Application
     {
         while (!Raylib.WindowShouldClose())
         {
-            _fps = Raylib.GetFPS();
             PauseOrResume();
             if (_run)
             {
-                // Zoom 
-                TryZoom();
-                
-                // add bodies with a click of a mouse
                 TrySpawnBodies();
+                TryZoom();
+                _fps = Raylib.GetFPS();
                 _engine.Step(Raylib.GetFrameTime());
             }
             Render(_engine.GetBodies());
@@ -200,13 +209,16 @@ public class Application
         _iSBodyCountVisible = true;
         _spawnRectRestitution = 0.8f;
         _spawnCircleRestitution = 0.8f;
-        _spawnRectMass = 1f;
-        _spawnCircleMass = 1f;
-        _spawnRectHeight = 30f;
-        _spawnRectWidth = 30f;
+        _spawnRectMass = 100f;
+        _spawnCircleMass = 30f;
+        _spawnRectHeight = 100f;
+        _spawnRectWidth = 100f;
         _spawnCircleRadius = 30f;
         _spawnAngle = 0f;
         _spawnIsStatic = false;
+        _spawnDk = 0.1f;
+        _spawnSk = 0.2f;
+        _areContactPointsVisible = false;
         _camera = new Camera2D();
         _camera.Target = new Vector2(400,300);
         _camera.Offset = new Vector2(400,300);
@@ -214,3 +226,5 @@ public class Application
         _fps = Raylib.GetFPS();
     }
 }
+
+
