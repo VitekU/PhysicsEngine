@@ -8,7 +8,7 @@ namespace engine;
 public class Application
 {
     private bool _run;
-    private Engine _engine;
+    private readonly Engine _engine;
     private int _fps;
     private Camera2D _camera;
     private bool _iSGuiVisible;
@@ -17,6 +17,12 @@ public class Application
     private Vector2 _debugWindowLocation;
     private float _debugWindowHeight;
     private float _debugWindowWidth;
+    private readonly Color _lineColor;
+    private readonly Color _bgColor;
+    private int _currentScreenWidth;
+    private int _currentScreenHeight;
+    private readonly Color _borderColor;
+    // properties of the bodies that are being spawned
     private float _spawnRectRestitution;
     private float _spawnCircleRestitution;
     private float _spawnRectMass;
@@ -29,6 +35,7 @@ public class Application
     private float _spawnDk;
     private float _spawnSk;
     private bool _areContactPointsVisible;
+    
     public void Start()
     {
         Raylib.SetConfigFlags(ConfigFlags.ResizableWindow);
@@ -38,8 +45,8 @@ public class Application
         //_engine.AddRectangle(new Vector2( 400, 110), 0.8f, 10f, false, 100f, 100f, 0f);
         //_engine.AddRectangle(new Vector2(800, 800f), 0.8f, 1f, true, 1000, 80f, 0f);
         _engine.AddRectangle(new Vector2(800f, 800f), 0.8f, 1f, true, 1400f, 80f, 0f, 0.1f, 0.2f);
-        //_engine.AddRectangle(new Vector2(400, 300), 0.6f, 1f, true, 800, 80f, 10);
-        _engine.AddRectangle(new Vector2(1200, 500), 0.6f, 1f, true, 700, 80f, -10, 0.1f, 0.2f);
+        _engine.AddRectangle(new Vector2(450f, 300f), 0.6f, 1f, true, 800, 80f, 10, 0.1f, 0.2f);
+        _engine.AddRectangle(new Vector2(1200f, 500f), 0.6f, 1f, true, 700, 80f, -10, 0.1f, 0.2f);
         _run = true;
         Raylib.SetTargetFPS(60);
         ApplicationLoop();
@@ -50,19 +57,27 @@ public class Application
         Raylib.BeginDrawing();
         Raylib.ClearBackground(Color.White);
         Raylib.BeginMode2D(_camera);
-        
+
+        // render the fancy background
+        _currentScreenHeight = Raylib.GetScreenHeight();
+        _currentScreenWidth = Raylib.GetScreenWidth();
+        //RenderBackground(_currentScreenWidth, _currentScreenWidth);
         foreach (var body in bodies)
         {
             if (body is Circle2D circle)
             {
-                Raylib.DrawCircle((int)(circle.Position.X), (int)(circle.Position.Y), circle.Radius , Color.Red);
-                Raylib.DrawLineEx(circle.Position, circle.PointForRotation, 2f, Color.Black);
+                Raylib.DrawCircle((int)(circle.Position.X), (int)(circle.Position.Y), circle.Radius , _borderColor);
+                Raylib.DrawCircle((int)(circle.Position.X), (int)(circle.Position.Y), circle.Radius - 2f , Color.Red);
+                //Raylib.DrawLineEx(circle.Position, circle.PointForRotation, 2f, Color.Black);
             }
             if (body is Rectangle2D rectangle)
             {
                 Rectangle rect = new Rectangle(rectangle.Position.X, rectangle.Position.Y, rectangle.Width, rectangle.Height);
                 Vector2 origin = new Vector2(rectangle.Width / 2f , rectangle.Height / 2f );
-                Raylib.DrawRectanglePro(rect, origin, (float)(rectangle.Angle / Math.PI * 180), Color.Blue);
+                Rectangle rectFill = new Rectangle(rectangle.Position.X, rectangle.Position.Y, rectangle.Width - 4, rectangle.Height - 4);
+                Vector2 originFill = new Vector2((rectangle.Width - 4f) / 2f , (rectangle.Height - 4f) / 2f );
+                Raylib.DrawRectanglePro(rect, origin, (float)(rectangle.Angle / Math.PI * 180), _borderColor);
+                Raylib.DrawRectanglePro(rectFill, originFill, (float)(rectangle.Angle / Math.PI * 180), Color.Blue);
             }
         }
 
@@ -77,8 +92,31 @@ public class Application
         HandleGui();
         Raylib.EndDrawing();
     }
-    
 
+    private void RenderBackground(int w, int h)
+    {
+        Vector2 startPoint = new Vector2(-20f, -20f);
+        Vector2 endPoint = new Vector2(-20f, h + 20);
+        Vector2 differenceX = new Vector2(100f, 0f);
+        Vector2 differenceY = new Vector2(0f, 100f);
+        
+        while (startPoint.X < w)
+        {
+            Raylib.DrawLineEx(startPoint, endPoint, 1f, _lineColor);
+            startPoint += differenceX;
+            endPoint += differenceX;
+        }
+        
+        startPoint = new Vector2(-20f, -20f);
+        endPoint = new Vector2(w + 20, -20f);
+        
+        while (startPoint.Y < h)
+        {
+            Raylib.DrawLineEx(startPoint, endPoint, 1f, _lineColor);
+            startPoint += differenceY;
+            endPoint += differenceY;
+        }
+    }
     private void HandleGui()
     {
         float g = _engine.Gravitation / 10;
@@ -124,16 +162,16 @@ public class Application
 
         if (_iSFpsVisible && _iSBodyCountVisible)
         {
-            Raylib.DrawText(Convert.ToString(_fps), 5, 0, 30, Color.Black);
+            Raylib.DrawText(Convert.ToString(_fps), 5, 5, 30, Color.Black);
             Raylib.DrawText(Convert.ToString(_engine.GetBodies().Count), 5, 40, 30, Color.Black);
         }
         else if (_iSFpsVisible)
         {
-            Raylib.DrawText(Convert.ToString(_fps), 5, 0, 30, Color.Black);
+            Raylib.DrawText(Convert.ToString(_fps), 5, 5, 30, Color.Black);
         }
         else if (_iSBodyCountVisible)
         {
-            Raylib.DrawText(Convert.ToString(_engine.GetBodies().Count), 5, 0, 30, Color.Black);
+            Raylib.DrawText(Convert.ToString(_engine.GetBodies().Count), 5, 5, 30, Color.Black);
         }
     }
     private void PauseOrResume()
@@ -145,7 +183,9 @@ public class Application
     }
     private void TrySpawnBodies()
     {
-        Vector2 mousePos = Raylib.GetMousePosition();
+        Vector2 mousePos = Raylib.GetScreenToWorld2D(Raylib.GetMousePosition(), _camera);
+        
+        Console.WriteLine(mousePos);
         if (_iSGuiVisible)
         {
             if (mousePos.X >= _debugWindowLocation.X && mousePos.X <= _debugWindowLocation.X + _debugWindowWidth &&
@@ -180,7 +220,12 @@ public class Application
             }
         }
     }
-    
+
+    private void ResizeBoundaries()
+    {
+        _engine.EditBoundaries(Raylib.GetScreenToWorld2D(new Vector2(_currentScreenWidth, 0), _camera), 
+            Raylib.GetScreenToWorld2D(new Vector2(_currentScreenHeight, 0), _camera));
+    }
 
     private void ApplicationLoop()
     {
@@ -191,6 +236,7 @@ public class Application
             {
                 TrySpawnBodies();
                 TryZoom();
+                
                 _fps = Raylib.GetFPS();
                 _engine.Step(Raylib.GetFrameTime());
             }
@@ -219,6 +265,9 @@ public class Application
         _spawnDk = 0.1f;
         _spawnSk = 0.2f;
         _areContactPointsVisible = false;
+        _lineColor = new Color(255, 255, 255, 80);
+        _bgColor = new Color(2, 2, 13, 255);
+        _borderColor = new Color(0, 0, 0, 200);
         _camera = new Camera2D();
         _camera.Target = new Vector2(400,300);
         _camera.Offset = new Vector2(400,300);

@@ -5,19 +5,19 @@ namespace engine;
 public class Engine
 {
     private readonly List<RigidBody2> _bodies;
-    private int _heightBoundary;
-    private int _widthBoundary;
+    private static int _heightBoundary;
+    private static int _widthBoundary;
     private readonly float _maxRadius;
     private readonly float _maxMass;
     private readonly float _maxRestitution;
     private readonly float _maxWidth;
     private readonly float _maxHeight;
+    public float Gravitation { get; set; }
     private float _stepLenght;
     private readonly int _substeps = 16;
     private readonly Collisions _collisions;
-    
     public List<Vector2> CPs { get; set; }
-    public float Gravitation { get; set; }
+    
 
     public void Step(float delta)
     {
@@ -25,13 +25,14 @@ public class Engine
         _stepLenght += delta;
         if (_stepLenght >= 1/60f)
         {
+            RemoveOutBodies();
             for (int s = 0; s < _substeps; s++)
             {
-                for (int i = 0; i < BodyCount(); i++)
+                for (int i = 0; i < _bodies.Count; i++)
                 {
                     RigidBody2 a = _bodies[i];
                     
-                    for (int j = i + 1; j < BodyCount(); j++)
+                    for (int j = i + 1; j < _bodies.Count; j++)
                     {
                         RigidBody2 b = _bodies[j];
     
@@ -88,6 +89,7 @@ public class Engine
                 {
                     if (!body.IsStatic)
                     {
+                        
                         body.ApplyGravity(new Vector2(0, Gravitation));
                     }
                         
@@ -104,11 +106,61 @@ public class Engine
         return _bodies;
     }
 
-    private int BodyCount()
+    public void EditBoundaries(Vector2 w, Vector2 h)
     {
-        return _bodies.Count;
+        _widthBoundary = (int)w.X;
+        _heightBoundary = (int)h.X;
     }
+
+    private static bool IsOutsideBounds(RigidBody2 body)
+    {
+        // check for objects being outside of the boundaries (except for the upper boundary)
+        if (body is Circle2D circle)
+        {
+            if (circle.Position.X - circle.Radius - 20 > _widthBoundary)
+            {
+                return true;
+            }
+
+            if (circle.Position.X + circle.Radius + 20 < 0)
+            {
+                return true;
+            }
+
+            if (circle.Position.Y - circle.Radius - 20 > _heightBoundary)
+            {
+                return true;
+            }
+            
+            return false;
+        }
         
+        if (body is Rectangle2D rect)
+        {
+            if (rect.Position.X - rect.Width / 2f - 20 > _widthBoundary)
+            {
+                return true;
+            }
+            
+            if (rect.Position.X + rect.Width / 2f + 20 < 0)
+            {
+                return true;
+            }
+
+            if (rect.Position.Y - rect.Height / 2f - 20 > _heightBoundary)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        return false;
+    } 
+    private void RemoveOutBodies()
+    {
+        _bodies.RemoveAll(IsOutsideBounds);
+    }
+    
     public bool AddCircle(Vector2 position, float restitution, float mass, bool isStatic, float radius, float angle, float dk, float sk)
     {
         if (radius <= _maxRadius && mass <= _maxMass && restitution <= _maxRestitution && restitution > 0 && mass > 0 && radius > 0)
@@ -138,6 +190,8 @@ public class Engine
         Gravitation = 1000f;
         CPs = new List<Vector2>();
         _collisions = new Collisions();
+        _heightBoundary = 1000;
+        _widthBoundary = 1600;
 
         _bodies = new();
     }

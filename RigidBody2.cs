@@ -33,7 +33,6 @@ public abstract class RigidBody2
             Position += force;
         } 
     }
-    
     public void ApplyImpulse(Vector2 impulse, Vector2 contactVector)
     {
         Velocity += impulse * InverseMass;

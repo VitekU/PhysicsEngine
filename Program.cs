@@ -12,9 +12,7 @@ internal abstract class Program
 }
 
 /* TODO
- * fancy background
- * boundaries
+ * boundaries - napul hotove, chybi zoom
  * narrow & broad phase
  * AABB
- * quad-tree
  */
