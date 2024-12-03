@@ -39,7 +39,7 @@ public class Application
     public void Start()
     {
         Raylib.SetConfigFlags(ConfigFlags.ResizableWindow);
-        Raylib.InitWindow(1600,1000, "engine");
+        Raylib.InitWindow(_currentScreenWidth,_currentScreenHeight, "engine");
         rlImGui.Setup();
         
         //_engine.AddRectangle(new Vector2( 400, 110), 0.8f, 10f, false, 100f, 100f, 0f);
@@ -61,6 +61,7 @@ public class Application
         // render the fancy background
         _currentScreenHeight = Raylib.GetScreenHeight();
         _currentScreenWidth = Raylib.GetScreenWidth();
+        
         //RenderBackground(_currentScreenWidth, _currentScreenWidth);
         foreach (var body in bodies)
         {
@@ -183,9 +184,7 @@ public class Application
     }
     private void TrySpawnBodies()
     {
-        Vector2 mousePos = Raylib.GetScreenToWorld2D(Raylib.GetMousePosition(), _camera);
-        
-        Console.WriteLine(mousePos);
+        Vector2 mousePos = Raylib.GetMousePosition();
         if (_iSGuiVisible)
         {
             if (mousePos.X >= _debugWindowLocation.X && mousePos.X <= _debugWindowLocation.X + _debugWindowWidth &&
@@ -194,6 +193,9 @@ public class Application
                 return;
             }
         }
+        // converting the actual mouse position into the world coordinates 
+        mousePos = Raylib.GetScreenToWorld2D(mousePos, _camera);
+        
         if (Raylib.IsMouseButtonPressed(MouseButton.Left))
         {
             _engine.AddCircle(mousePos, _spawnCircleRestitution, _spawnCircleMass, _spawnIsStatic, _spawnCircleRadius, _spawnAngle, _spawnDk, _spawnSk);
@@ -220,13 +222,13 @@ public class Application
             }
         }
     }
-
     private void ResizeBoundaries()
     {
         _engine.EditBoundaries(Raylib.GetScreenToWorld2D(new Vector2(_currentScreenWidth, 0), _camera), 
-            Raylib.GetScreenToWorld2D(new Vector2(_currentScreenHeight, 0), _camera));
+            Raylib.GetScreenToWorld2D(new Vector2(_currentScreenHeight, 0), _camera),
+            Raylib.GetScreenToWorld2D(new Vector2(0, 0), _camera));
     }
-
+    
     private void ApplicationLoop()
     {
         while (!Raylib.WindowShouldClose())
@@ -236,7 +238,7 @@ public class Application
             {
                 TrySpawnBodies();
                 TryZoom();
-                
+                ResizeBoundaries();
                 _fps = Raylib.GetFPS();
                 _engine.Step(Raylib.GetFrameTime());
             }
@@ -246,7 +248,7 @@ public class Application
         Raylib.CloseWindow();
     }
 
-    public Application(Engine engine)
+    public Application(Engine engine, int defScreenWidth, int defScreenHeight)
     {
         _engine = engine;
         _run = false;
@@ -273,6 +275,8 @@ public class Application
         _camera.Offset = new Vector2(400,300);
         _camera.Zoom = 1f;
         _fps = Raylib.GetFPS();
+        _currentScreenWidth = defScreenWidth;
+        _currentScreenHeight = defScreenHeight;
     }
 }
 

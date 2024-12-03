@@ -292,13 +292,13 @@ public class Collisions
             
             Vector2 frictionImpulse;
             
-            if (Math.Abs(jt) <= j * 0.2f)
+            if (Math.Abs(jt) <= j * _sk)
             {
                 frictionImpulse = jt * tangent;
             }
             else
             {
-                frictionImpulse = -j * tangent * 0.1f;
+                frictionImpulse = -j * tangent * _dk;
             }
             
             if (VectorMathHelper.VectorCompare(frictionImpulse, Vector2.Zero))

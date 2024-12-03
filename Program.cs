@@ -6,13 +6,12 @@ internal abstract class Program
     {
         Engine stroj = new Engine(100, 1000000, 10, 1000f, 2000f);
             
-        Application app = new Application(stroj);
+        Application app = new Application(stroj, 1600, 1000);
         app.Start();
     }
 }
 
 /* TODO
- * boundaries - napul hotove, chybi zoom
  * narrow & broad phase
  * AABB
  */

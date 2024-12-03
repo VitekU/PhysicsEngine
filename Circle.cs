@@ -18,7 +18,7 @@ public sealed class Circle2D : RigidBody2
         Matrix3x2 rotationMatrix = Matrix3x2.CreateRotation(angle, origin);
         return Vector2.Transform(point, rotationMatrix);
     }
-    public Circle2D(Vector2 position, float restitution, float mass, bool isStatic,float angle, float dk, float sk, float radius) : base(position, restitution, mass, isStatic, angle, dk, sk)
+    public Circle2D(Vector2 position, float restitution, float mass, bool isStatic, float angle, float dk, float sk, float radius) : base(position, restitution, mass, isStatic, angle, dk, sk)
     {
         Radius = radius;
         RotationalInertia = CalculateRotationalInertia();

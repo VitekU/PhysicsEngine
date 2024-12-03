@@ -7,6 +7,7 @@ public class Engine
     private readonly List<RigidBody2> _bodies;
     private static int _heightBoundary;
     private static int _widthBoundary;
+    private static int _widthZeroBoundary;
     private readonly float _maxRadius;
     private readonly float _maxMass;
     private readonly float _maxRestitution;
@@ -16,6 +17,7 @@ public class Engine
     private float _stepLenght;
     private readonly int _substeps = 16;
     private readonly Collisions _collisions;
+    private RigidBody2? _movingBody;
     public List<Vector2> CPs { get; set; }
     
 
@@ -106,10 +108,11 @@ public class Engine
         return _bodies;
     }
 
-    public void EditBoundaries(Vector2 w, Vector2 h)
+    public void EditBoundaries(Vector2 w, Vector2 h, Vector2 z)
     {
         _widthBoundary = (int)w.X;
         _heightBoundary = (int)h.X;
+        _widthZeroBoundary = (int)z.X;
     }
 
     private static bool IsOutsideBounds(RigidBody2 body)
@@ -122,7 +125,7 @@ public class Engine
                 return true;
             }
 
-            if (circle.Position.X + circle.Radius + 20 < 0)
+            if (circle.Position.X + circle.Radius + 20 < _widthZeroBoundary)
             {
                 return true;
             }
@@ -142,7 +145,7 @@ public class Engine
                 return true;
             }
             
-            if (rect.Position.X + rect.Width / 2f + 20 < 0)
+            if (rect.Position.X + rect.Width / 2f + 20 < _widthZeroBoundary)
             {
                 return true;
             }
@@ -192,6 +195,7 @@ public class Engine
         _collisions = new Collisions();
         _heightBoundary = 1000;
         _widthBoundary = 1600;
+        _widthZeroBoundary = 0;
 
         _bodies = new();
     }
