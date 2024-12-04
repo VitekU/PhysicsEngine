@@ -45,8 +45,8 @@ public class Application
         //_engine.AddRectangle(new Vector2( 400, 110), 0.8f, 10f, false, 100f, 100f, 0f);
         //_engine.AddRectangle(new Vector2(800, 800f), 0.8f, 1f, true, 1000, 80f, 0f);
         _engine.AddRectangle(new Vector2(800f, 800f), 0.8f, 1f, true, 1400f, 80f, 0f, 0.1f, 0.2f);
-        _engine.AddRectangle(new Vector2(450f, 300f), 0.6f, 1f, true, 800, 80f, 10, 0.1f, 0.2f);
-        _engine.AddRectangle(new Vector2(1200f, 500f), 0.6f, 1f, true, 700, 80f, -10, 0.1f, 0.2f);
+        //_engine.AddRectangle(new Vector2(450f, 300f), 0.6f, 1f, true, 800, 80f, 10, 0.1f, 0.2f);
+        //_engine.AddRectangle(new Vector2(1200f, 500f), 0.6f, 1f, true, 700, 80f, -10, 0.1f, 0.2f);
         _run = true;
         Raylib.SetTargetFPS(60);
         ApplicationLoop();
@@ -196,11 +196,11 @@ public class Application
         // converting the actual mouse position into the world coordinates 
         mousePos = Raylib.GetScreenToWorld2D(mousePos, _camera);
         
-        if (Raylib.IsMouseButtonPressed(MouseButton.Left))
+        if (Raylib.IsMouseButtonPressed(MouseButton.Left) && !Raylib.IsKeyDown(KeyboardKey.LeftShift))
         {
             _engine.AddCircle(mousePos, _spawnCircleRestitution, _spawnCircleMass, _spawnIsStatic, _spawnCircleRadius, _spawnAngle, _spawnDk, _spawnSk);
         }
-        else if (Raylib.IsMouseButtonPressed(MouseButton.Right))
+        else if (Raylib.IsMouseButtonPressed(MouseButton.Right) && !Raylib.IsKeyDown(KeyboardKey.LeftShift))
         {
             _engine.AddRectangle(mousePos, _spawnRectRestitution, _spawnRectMass, _spawnIsStatic, _spawnRectWidth, _spawnRectHeight, _spawnAngle, _spawnDk, _spawnSk);
         }
@@ -228,6 +228,19 @@ public class Application
             Raylib.GetScreenToWorld2D(new Vector2(_currentScreenHeight, 0), _camera),
             Raylib.GetScreenToWorld2D(new Vector2(0, 0), _camera));
     }
+
+    private void TryHold()
+    {
+        if (Raylib.IsKeyDown(KeyboardKey.LeftShift) && Raylib.IsMouseButtonDown(MouseButton.Left))
+        {
+            _engine.TryHold = true;
+            _engine.MousePos = Raylib.GetScreenToWorld2D(Raylib.GetMousePosition(), _camera);
+        }
+        else
+        {
+            _engine.TryHold = false;
+        }
+    }
     
     private void ApplicationLoop()
     {
@@ -238,6 +251,7 @@ public class Application
             {
                 TrySpawnBodies();
                 TryZoom();
+                TryHold();
                 ResizeBoundaries();
                 _fps = Raylib.GetFPS();
                 _engine.Step(Raylib.GetFrameTime());
@@ -279,5 +293,3 @@ public class Application
         _currentScreenHeight = defScreenHeight;
     }
 }
-
-

@@ -15,10 +15,11 @@ public class Engine
     private readonly float _maxHeight;
     public float Gravitation { get; set; }
     private float _stepLenght;
-    private readonly int _substeps = 16;
+    private readonly int _substeps = 32;
     private readonly Collisions _collisions;
-    private RigidBody2? _movingBody;
     public List<Vector2> CPs { get; set; }
+    public bool TryHold { get; set; }
+    public Vector2 MousePos { get; set; }
     
 
     public void Step(float delta)
@@ -91,10 +92,13 @@ public class Engine
                 {
                     if (!body.IsStatic)
                     {
-                        
-                        body.ApplyGravity(new Vector2(0, Gravitation));
+                        body.ApplyForce(new Vector2(0, Gravitation));
                     }
-                        
+                    if (body.IsHeld)
+                    {
+                        HoldLogic(body);
+                    }
+                    
                     body.Step(1 / 60f / _substeps);
                 }
             }
@@ -108,6 +112,26 @@ public class Engine
         return _bodies;
     }
 
+    private void HoldLogic(RigidBody2 body)
+    {
+        if (TryHold)
+        {
+            if (Vector2.DistanceSquared(MousePos, body.Position) < 25000)
+            {
+                body.IsHeld = true;
+            }
+        }
+        else
+        {
+            body.IsHeld = false;
+        }
+
+        if (body.IsHeld)
+        {
+            body.ApplyForce((MousePos - body.Position) * 10f);
+            body.ApplyForce(-1.5f * body.Velocity);
+        }
+    }
     public void EditBoundaries(Vector2 w, Vector2 h, Vector2 z)
     {
         _widthBoundary = (int)w.X;
@@ -117,6 +141,10 @@ public class Engine
 
     private static bool IsOutsideBounds(RigidBody2 body)
     {
+        if (body.IsStatic)
+        {
+            return false;
+        }
         // check for objects being outside of the boundaries (except for the upper boundary)
         if (body is Circle2D circle)
         {
@@ -196,6 +224,8 @@ public class Engine
         _heightBoundary = 1000;
         _widthBoundary = 1600;
         _widthZeroBoundary = 0;
+        TryHold = false;
+        MousePos = Vector2.Zero;
 
         _bodies = new();
     }

@@ -17,12 +17,13 @@ public abstract class RigidBody2
     public float InverseRotationalInertia { get; protected set; }
     public float StaticFrictionC { get; set; }
     public float DynamicFrictionC { get; set; }
+    public bool IsHeld { get; set; }
     
     
     protected virtual void UpdateVertices() {}
     protected abstract float CalculateRotationalInertia();
     
-    public void ApplyGravity(Vector2 a)
+    public void ApplyForce(Vector2 a)
     {
         Acceleration += a;
     }
@@ -70,6 +71,7 @@ public abstract class RigidBody2
         Angle = angle;
         DynamicFrictionC = dk;
         StaticFrictionC = sk;
+        IsHeld = false;
         
         if (isStatic)
         {
