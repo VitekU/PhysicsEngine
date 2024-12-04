@@ -116,7 +116,7 @@ public class Engine
     {
         if (TryHold)
         {
-            if (Vector2.DistanceSquared(MousePos, body.Position) < 25000)
+            if (Vector2.DistanceSquared(MousePos, body.Position) < 5000)
             {
                 body.IsHeld = true;
             }
