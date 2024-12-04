@@ -94,10 +94,7 @@ public class Engine
                     {
                         body.ApplyForce(new Vector2(0, Gravitation));
                     }
-                    if (body.IsHeld)
-                    {
-                        HoldLogic(body);
-                    }
+                    HoldLogic(body);
                     
                     body.Step(1 / 60f / _substeps);
                 }
@@ -114,6 +111,10 @@ public class Engine
 
     private void HoldLogic(RigidBody2 body)
     {
+        if (body.IsStatic)
+        {
+            return;
+        }
         if (TryHold)
         {
             if (Vector2.DistanceSquared(MousePos, body.Position) < 6000)
