@@ -114,6 +114,7 @@ public class Engine
         if (body.IsStatic)
         {
             return;
+            
         }
         if (TryHold)
         {
