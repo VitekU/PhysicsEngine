@@ -16,8 +16,3 @@ Defaultní okno má velikost 1600x1000 pixelů, což jde upravit v Program.cs, k
 - shift + leftclick => "chytit těleso a aplikovat na něj sílu"
 - esc => ukončit simulaci
 
-### TODO list
-
-- zkusit nějakou optimalizaci
-- přidat sílu na pohybování těles, jakoby drag and drop princip
-- přidat možnost resetovat scénu
