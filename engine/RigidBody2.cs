@@ -19,7 +19,6 @@ public abstract class RigidBody2
     public float DynamicFrictionC { get; set; }
     public bool IsHeld { get; set; }
     
-    
     protected virtual void UpdateVertices() {}
     protected abstract float CalculateRotationalInertia();
     
@@ -36,9 +35,14 @@ public abstract class RigidBody2
     }
     public void ApplyImpulse(Vector2 impulse, Vector2 contactVector)
     {
+        if (IsStatic)
+        {
+            return;
+        }
         Velocity += impulse * InverseMass;
         float torque = VectorMathHelper.Cross(contactVector, impulse);
         AngularVelocity += torque * InverseRotationalInertia;
+        
     }
     
     public void Step(float delta)
@@ -55,10 +59,10 @@ public abstract class RigidBody2
         {
             Velocity = Vector2.Zero;
         }
-        
+
         Acceleration = Vector2.Zero;
     }
-
+    
     protected RigidBody2(Vector2 position, float restitution, float mass, bool isStatic, float angle, float dk, float sk)
     {
         Position = position;

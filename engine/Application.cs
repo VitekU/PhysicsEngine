@@ -17,8 +17,6 @@ public class Application
     private Vector2 _debugWindowLocation;
     private float _debugWindowHeight;
     private float _debugWindowWidth;
-    private readonly Color _lineColor;
-    private readonly Color _bgColor;
     private int _currentScreenWidth;
     private int _currentScreenHeight;
     private readonly Color _borderColor;
@@ -42,11 +40,12 @@ public class Application
         Raylib.InitWindow(_currentScreenWidth,_currentScreenHeight, "engine");
         rlImGui.Setup();
         
-        //_engine.AddRectangle(new Vector2( 400, 110), 0.8f, 10f, false, 100f, 100f, 0f);
-        //_engine.AddRectangle(new Vector2(800, 800f), 0.8f, 1f, true, 1000, 80f, 0f);
-        _engine.AddRectangle(new Vector2(800f, 800f), 0.8f, 1f, true, 1400f, 80f, 0f, 0.1f, 0.2f);
-        //_engine.AddRectangle(new Vector2(450f, 300f), 0.6f, 1f, true, 800, 80f, 10, 0.1f, 0.2f);
-        //_engine.AddRectangle(new Vector2(1200f, 500f), 0.6f, 1f, true, 700, 80f, -10, 0.1f, 0.2f);
+        //_engine.AddRectangle(new Vector2( 400, 110), 0.8f, 10f, false, 100f, 100f, 0f, 0.1f, 0.2f);
+        //_engine.AddRectangle(new Vector2(800, 800f), 0.8f, 1f, true, 1000, 80f, 0f, 0.1f, 0.2f);
+        _engine.AddRectangle(new Vector2(450f, 300f), 0.6f, 1f, true, 800, 80f, 10, 0.1f, 0.2f);
+        _engine.AddRectangle(new Vector2(1200f, 500f), 0.6f, 1f, true, 700, 80f, -10, 0.1f, 0.2f);
+        _engine.AddRectangle(new Vector2(800, 800f), 0.8f, 1f, true, 1400, 80f, 0, 0.1f, 0.2f);
+        
         _run = true;
         Raylib.SetTargetFPS(60);
         ApplicationLoop();
@@ -58,11 +57,9 @@ public class Application
         Raylib.ClearBackground(Color.White);
         Raylib.BeginMode2D(_camera);
 
-        // render the fancy background
         _currentScreenHeight = Raylib.GetScreenHeight();
         _currentScreenWidth = Raylib.GetScreenWidth();
         
-        //RenderBackground(_currentScreenWidth, _currentScreenWidth);
         foreach (var body in bodies)
         {
             if (body is Circle2D circle)
@@ -93,31 +90,7 @@ public class Application
         HandleGui();
         Raylib.EndDrawing();
     }
-
-    private void RenderBackground(int w, int h)
-    {
-        Vector2 startPoint = new Vector2(-20f, -20f);
-        Vector2 endPoint = new Vector2(-20f, h + 20);
-        Vector2 differenceX = new Vector2(100f, 0f);
-        Vector2 differenceY = new Vector2(0f, 100f);
-        
-        while (startPoint.X < w)
-        {
-            Raylib.DrawLineEx(startPoint, endPoint, 1f, _lineColor);
-            startPoint += differenceX;
-            endPoint += differenceX;
-        }
-        
-        startPoint = new Vector2(-20f, -20f);
-        endPoint = new Vector2(w + 20, -20f);
-        
-        while (startPoint.Y < h)
-        {
-            Raylib.DrawLineEx(startPoint, endPoint, 1f, _lineColor);
-            startPoint += differenceY;
-            endPoint += differenceY;
-        }
-    }
+    
     private void HandleGui()
     {
         float g = _engine.Gravitation / 10;
@@ -281,8 +254,6 @@ public class Application
         _spawnDk = 0.1f;
         _spawnSk = 0.2f;
         _areContactPointsVisible = false;
-        _lineColor = new Color(255, 255, 255, 80);
-        _bgColor = new Color(2, 2, 13, 255);
         _borderColor = new Color(0, 0, 0, 200);
         _camera = new Camera2D();
         _camera.Target = new Vector2(400,300);

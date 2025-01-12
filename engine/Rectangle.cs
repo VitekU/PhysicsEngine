@@ -31,7 +31,12 @@ public sealed class Rectangle2D : RigidBody2
         Vertices[2] = RotatePoint(v3, center, angle);
         Vertices[3] = RotatePoint(v4, center, angle);
     }
-    public Rectangle2D(Vector2 position, float restitution, float mass, bool isStatic,float angle, float dk, float sk, float width, float height) : base(position, restitution, mass, isStatic, angle, dk, sk)
+    protected override float CalculateRotationalInertia()
+    {
+        return (float)(Mass * (Math.Pow(Height, 2) + Math.Pow(Width, 2)) / 12f);
+    }
+    
+    public Rectangle2D(Vector2 position, float restitution, float mass, bool isStatic, float angle, float dk, float sk, float width, float height) : base(position, restitution, mass, isStatic, angle, dk, sk)
     {
         Height = height;
         Width = width;
@@ -48,8 +53,5 @@ public sealed class Rectangle2D : RigidBody2
         }
     }
 
-    protected override float CalculateRotationalInertia()
-    {
-        return (float)(Mass * (Math.Pow(Height, 2) + Math.Pow(Width, 2)) / 12f);
-    }
+    
 }

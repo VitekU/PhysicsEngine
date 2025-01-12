@@ -10,8 +10,3 @@ internal abstract class Program
         app.Start();
     }
 }
-
-/* TODO
- * narrow & broad phase
- * AABB
- */

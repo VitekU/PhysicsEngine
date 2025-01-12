@@ -264,7 +264,6 @@ public class Collisions
         
         
         // friction
-        
         for (int i = 0; i < cpCount; i++)
         {
             Vector2 ra = _contacts[i] - a.Position;
@@ -292,13 +291,13 @@ public class Collisions
             
             Vector2 frictionImpulse;
             
-            if (Math.Abs(jt) <= j * _sk)
+            if (Math.Abs(jt) <= j * 0.2f)
             {
                 frictionImpulse = jt * tangent;
             }
             else
             {
-                frictionImpulse = -j * tangent * _dk;
+                frictionImpulse = -j * tangent * 0.1f;
             }
             
             if (VectorMathHelper.VectorCompare(frictionImpulse, Vector2.Zero))
@@ -314,8 +313,14 @@ public class Collisions
             Vector2 frictionImpulse = _frictionImpulses[i];
             Vector2 ra = _raList[i];
             Vector2 rb = _rbList[i];
-            a.ApplyImpulse(-frictionImpulse, ra);
-            b.ApplyImpulse(frictionImpulse, rb);
+            if (a is not Circle2D)
+            {
+                a.ApplyImpulse(-frictionImpulse, ra);
+            }
+            if (b is not Circle2D)
+            {
+                b.ApplyImpulse(frictionImpulse, rb);
+            }
         }
     }
 }

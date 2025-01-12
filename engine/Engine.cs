@@ -15,7 +15,7 @@ public class Engine
     private readonly float _maxHeight;
     public float Gravitation { get; set; }
     private float _stepLenght;
-    private readonly int _substeps = 32;
+    private readonly int _substeps = 64;
     private readonly Collisions _collisions;
     public List<Vector2> CPs { get; set; }
     public bool TryHold { get; set; }
@@ -118,7 +118,7 @@ public class Engine
         }
         if (TryHold)
         {
-            if (Vector2.DistanceSquared(MousePos, body.Position) < 6000)
+            if (Vector2.DistanceSquared(MousePos, body.Position) < 2500)
             {
                 body.IsHeld = true;
             }
@@ -127,10 +127,10 @@ public class Engine
         {
             body.IsHeld = false;
         }
-
+        
         if (body.IsHeld)
         {
-            body.ApplyForce((MousePos - body.Position) * 10f);
+            body.ApplyForce((MousePos - body.Position) * 30f);
             body.ApplyForce(-1.5f * body.Velocity);
         }
     }
@@ -193,6 +193,11 @@ public class Engine
     {
         _bodies.RemoveAll(IsOutsideBounds);
     }
+
+    public void RemoveAllBodies()
+    {
+        _bodies.Clear();
+    }
     
     public bool AddCircle(Vector2 position, float restitution, float mass, bool isStatic, float radius, float angle, float dk, float sk)
     {
@@ -203,7 +208,6 @@ public class Engine
         }
         return false;
     }
-
     public bool AddRectangle(Vector2 position, float restitution, float mass, bool iSstatic, float width, float height, float angle, float dk, float sk)
     {
         if (width <= _maxWidth && height <= _maxHeight && mass <= _maxMass && restitution <= _maxRestitution && restitution > 0 && mass > 0 && width > 0 && height > 0)
@@ -213,6 +217,7 @@ public class Engine
         }
         return false;
     }
+    
     public Engine(float maxRadius, float maxMass, float maxRestituion, float maxHeight, float maxWidth)
     {
         _maxRadius = maxRadius;
@@ -229,6 +234,6 @@ public class Engine
         TryHold = false;
         MousePos = Vector2.Zero;
 
-        _bodies = new();
+        _bodies = new List<RigidBody2>();
     }
 }
