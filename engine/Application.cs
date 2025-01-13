@@ -122,8 +122,8 @@ public class Application
                 ImGui.InputFloat("Rectangle height", ref _spawnRectHeight);
                 ImGui.InputFloat("Rectangle width", ref _spawnRectWidth);
                 ImGui.InputFloat("Body angle", ref _spawnAngle);
-                ImGui.InputFloat("Dynamic friction", ref _spawnDk);
-                ImGui.InputFloat("Static friction", ref _spawnSk);
+                //ImGui.InputFloat("Dynamic friction", ref _spawnDk);
+                //ImGui.InputFloat("Static friction", ref _spawnSk);
                 ImGui.Checkbox("Is body static", ref _spawnIsStatic);
             }
             
